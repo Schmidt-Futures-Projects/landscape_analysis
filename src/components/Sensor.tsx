@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import useFetch from '../hooks/useFetch';
+import { useHttp } from '../hooks/useHttp';
 
 interface Sensor {
   id: number;
@@ -8,7 +8,7 @@ interface Sensor {
 }
 
 const Sensor: React.FC = () => {
-  const { data, loading, error, fetchData } = useFetch<Sensor[]>('http://localhost:8000/');
+  const { data, loading, error, fetchData } = useHttp<Sensor[]>('http://localhost:8000/');
 
   useEffect(() => {
     fetchData();
