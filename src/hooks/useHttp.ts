@@ -25,8 +25,8 @@ export function handleRestResponse(resp: Response): Promise<any> {
     } else {
         return parseResponse(resp)
             .then((data: any) => {
-                const errorMessage = resp.statusText || 'An unexpected error occurred';
-                return Promise.reject(`${errorMessage}: ${data.message || data.detail || 'Unknown error'}`);
+                const errorStatusText = resp.statusText || 'Unexpected error';
+                return Promise.reject(`${errorStatusText}: ${data.message || data.detail || 'Unknown error'}`);
             });
     }
 }
@@ -66,11 +66,6 @@ export const useHttp = <T, E = any>(
             setLoading(false);
         }
     }, [url, stableConfig]);
-
-    console.log('callRequest:', callRequest);
-    console.log('url:', url);
-    console.log('config:', config);
-
 
     return { loading, data, error, callRequest };
 };

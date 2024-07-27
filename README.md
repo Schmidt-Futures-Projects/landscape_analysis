@@ -1,6 +1,7 @@
 # Notes to Start Developing
 `npm run dev`
 `npm run lint`
+`npm test`
 
 # React + TypeScript + Vite
 

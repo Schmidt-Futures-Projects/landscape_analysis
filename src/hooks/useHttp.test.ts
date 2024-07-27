@@ -39,7 +39,7 @@ describe('useHttp', () => {
   it('should set error when fetch fails', async () => {
       // Mock the fetch function to simulate an error
       (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-          new Response(JSON.stringify({ message: 'Internal server error' }), { status: 500 })
+          new Response(JSON.stringify({ message: 'Test an internal server error' }), { status: 500 })
       );
 
       const { result } = renderHook(() => useHttp<{ data: string }>('/my-endpoint'));
@@ -53,8 +53,8 @@ describe('useHttp', () => {
       await waitFor(() => {
           expect(result.current.loading).toBe(false);
           expect(result.current.data).toBeNull();
-          expect(result.current.error).toBe('Internal server error');
-      });
+          expect(result.current.error.message).toContain('Test an internal server error');
+        });
 
       // Check if fetch was called
       expect(fetch).toHaveBeenCalledWith('http://localhost:8000/my-endpoint', {});
