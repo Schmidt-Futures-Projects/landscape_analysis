@@ -9,38 +9,40 @@ export type HttpResult<T, E> = {
     callRequest: () => void;
 };
 
-function parseResponse(resp: Response): Promise<any> {
-    return resp.text().then(JSON.parse);
+async function parseResponse(resp: Response): Promise<any> {
+    const text = await resp.text();
+    return JSON.parse(text);
 }
 
-export function handleRestResponse(resp: Response): Promise<any> {
+export async function handleRestResponse(resp: Response): Promise<any> {
     if (resp.status >= 200 && resp.status < 300) {
         return parseResponse(resp);
     } else if (resp.status === 422) {
-        return parseResponse(resp).then((data: any) => Promise.reject({ 
+        const data = await parseResponse(resp);
+        return await Promise.reject({
             status: resp.status,
             statusText: resp.statusText,
-            ...data 
-        }));
+            ...data
+        });
     } else {
-        return parseResponse(resp)
-            .then((data: any) => {
-                const errorStatusText = resp.statusText || 'Unexpected error';
-                return Promise.reject(`${errorStatusText}: ${data.message || data.detail || 'Unknown error'}`);
-            });
+        const data = await parseResponse(resp);
+        const errorStatusText = resp.statusText || 'Unexpected error';
+        return await Promise.reject(`${errorStatusText}: ${data.message || data.detail || 'Unknown error'}`);
     }
 }
 
-export function request<TResponse>(
+export async function request<TResponse>(
     url: string,
     config: RequestInit = {}
 ): Promise<TResponse> {
-    return fetch(url, config)
-        .then(handleRestResponse)
-        .then((data) => data as TResponse)
-        .catch((error: string) => {
-            throw new Error(error);
-        });
+    try {
+        const resp = await fetch(url, config);
+        const data = await handleRestResponse(resp);
+        return data as TResponse;
+    } catch (error) {
+        debugger
+        throw new Error(error as string);
+    }
 }
 
 export const useHttp = <T, E = any>(

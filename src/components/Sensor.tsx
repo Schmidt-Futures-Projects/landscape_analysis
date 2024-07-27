@@ -9,8 +9,9 @@ interface Sensor {
 
 const Sensor: React.FC = () => {
     const [newSensor, setNewSensor] = useState<Sensor>({ id: 1, name: "Liam", value: Math.floor(Math.random() * 101) });
-    const { data, loading, error, callRequest } = useHttp<Sensor[]>('/', {i: 1});
-    const { loading: createSensorLoading, data: createSensorData, error: createSensorError, callRequest: createSensor } = useHttp('/sensor', {
+    const { data, loading, error, callRequest } = useHttp<Sensor[]>('/');
+    const { loading: getSensorLoading, data: getSensorData, error: getSensorError, callRequest: getSensor } = useHttp('/sensor/1', {});
+    const { loading: createSensorLoading, data: createSensorData, error: createSensorError, callRequest: createSensor } = useHttp<Sensor>('/sensor', {
         method: 'POST',
         body: JSON.stringify(newSensor),
         headers: { 'Content-Type': 'application/json' },
@@ -24,6 +25,11 @@ const Sensor: React.FC = () => {
     useEffect(() => {
         callRequest()
     }, [callRequest])
+
+
+    useEffect(() => {
+        getSensor()
+    }, [getSensor])
 
     return (
         <>
@@ -46,6 +52,17 @@ const Sensor: React.FC = () => {
             <div>
                 <h1>New Sensor:</h1>
                 <pre>{JSON.stringify(createSensorData)}</pre>
+            </div>
+            )}
+        </div>
+        <div>
+            <button onClick={getSensor}>Get Sensor</button>
+            {getSensorError && <p>Error: {getSensorError.message}</p>}
+            {getSensorLoading && <p>Get New Sensor</p>}
+            { getSensorData && (
+            <div>
+                <h1>Get Sensor:</h1>
+                <pre>{JSON.stringify(getSensorData)}</pre>
             </div>
             )}
         </div>
