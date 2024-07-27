@@ -1,12 +1,11 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
 const API_BASE_URL: string = 'http://localhost:8000';
 
-export type HttpResult<T, E> = {
-    loading: boolean;
+export type HttpResult<T> = {
     data: T | null;
-    error: E | null;
-    callRequest: () => void;
+    error: Error | null;
+    loading: boolean;
 };
 
 async function parseResponse(resp: Response): Promise<any> {
@@ -14,60 +13,30 @@ async function parseResponse(resp: Response): Promise<any> {
     return JSON.parse(text);
 }
 
+export function useHttp<T>(url: string, options: RequestInit = {}) {
+    const [result, setResult] = useState<HttpResult<T>>({
+        data: null,
+        error: null,
+        loading: false,
+    });
 
-export async function handleRestResponse(resp: Response): Promise<any> {
-    if (resp.status >= 200 && resp.status < 300) {
-        return parseResponse(resp);
-    } else if (resp.status === 422) {
-        const data = await parseResponse(resp);
-        return await Promise.reject({
-            status: resp.status,
-            statusText: resp.statusText,
-            ...data
-        });
-    } else {
-        const data = await parseResponse(resp);
-        const errorStatusText = resp.statusText || 'Unexpected error';
-        return await Promise.reject(`${errorStatusText}: ${data.message || data.detail || 'Unknown error'}`);
-    }
-}
-
-export async function request<TResponse>(
-    url: string,
-    config: RequestInit = {}
-): Promise<TResponse> {
-    try {
-        const resp = await fetch(url, config);
-        const data = await handleRestResponse(resp);
-        return data as TResponse;
-    } catch (error) {
-        throw new Error(error as string);
-    }
-}
-
-export const useHttp = <T, E = any>(
-    url: string,
-    config: RequestInit = {},
-): HttpResult<T, E> => {
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<E | null>(null);
-    const [data, setData] = useState<T | null>(null);
-
-    const stableConfig = useMemo(() => config, [JSON.stringify(config)]);
+    const stableOptions = useMemo(() => options, [JSON.stringify(options)]);
 
     const callRequest = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-
+        setResult(prev => ({ ...prev, loading: true }));
         try {
-            const result = await request<T>(API_BASE_URL + url, config);
-            setData(result);
-        } catch (err) {
-            setError(err as E);
-        } finally {
-            setLoading(false);
+            const response = await fetch(API_BASE_URL + url, options);
+            if (!response.ok) {
+                const data = await parseResponse(response);
+                const errorStatusText = response.statusText || 'Unexpected error';
+                throw new Error(`${errorStatusText}: ${data.message || data.detail || 'Unknown error'}`);
+            }
+            const data = await response.json();
+            setResult({ data, error: null, loading: false });
+        } catch (error) {
+            setResult({ data: null, error: error as Error, loading: false });
         }
-    }, [url, stableConfig]);
+    }, [url, stableOptions]);
 
-    return { loading, data, error, callRequest };
-};
+    return { ...result, callRequest };
+}

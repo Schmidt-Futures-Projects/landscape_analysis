@@ -53,7 +53,7 @@ describe('useHttp', () => {
       await waitFor(() => {
           expect(result.current.loading).toBe(false);
           expect(result.current.data).toBeNull();
-          expect(result.current.error.message).toContain('Test an internal server error');
+          expect(result.current.error?.message).toContain('Test an internal server error');
         });
 
       // Check if fetch was called
