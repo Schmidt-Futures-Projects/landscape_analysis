@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 const API_BASE_URL: string = 'http://localhost:8000';
 
-export type HttpResult<T, E = any> = {
+export type HttpResult<T, E> = {
     loading: boolean;
     data: T | null;
     error: E | null;
@@ -45,11 +45,13 @@ export function request<TResponse>(
 
 export const useHttp = <T, E = any>(
     url: string,
-    config: RequestInit = {}
+    config: RequestInit = {},
 ): HttpResult<T, E> => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<E | null>(null);
     const [data, setData] = useState<T | null>(null);
+
+    const stableConfig = useMemo(() => config, [JSON.stringify(config)]);
 
     const callRequest = useCallback(async () => {
         setLoading(true);
@@ -63,7 +65,11 @@ export const useHttp = <T, E = any>(
         } finally {
             setLoading(false);
         }
-    }, [url, config]);
+    }, [url, stableConfig]);
+
+    console.log('callRequest:', callRequest);
+    console.log('url:', url);
+    console.log('config:', config);
 
 
     return { loading, data, error, callRequest };

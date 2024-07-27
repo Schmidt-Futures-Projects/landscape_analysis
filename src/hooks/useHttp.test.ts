@@ -36,23 +36,27 @@ describe('useHttp', () => {
       // Check if fetch was called with the correct URL
       expect(fetch).toHaveBeenCalledWith('http://localhost:8000/my-endpoint', {});
   });
+  it('should set error when fetch fails', async () => {
+      // Mock the fetch function to simulate an error
+      (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+          new Response(JSON.stringify({ message: 'Internal server error' }), { status: 500 })
+      );
 
-    // it('should set error when fetch fails', async () => {
-    //     // Mock the fetch function to simulate an error
-    //     (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-    //         new Response(JSON.stringify({ message: 'Internal server error' }), { status: 500 })
-    //     );
+      const { result } = renderHook(() => useHttp<{ data: string }>('/my-endpoint'));
 
-    //     const { result } = renderHook(() => useHttp<{ data: string }>('/my-endpoint'));
+        // Call the callback function to trigger the fetch
+        act(() => {
+            result.current.callRequest();
+        });
 
-    //     // Wait for the hook to finish loading
-    //     await waitFor(() => {
-    //         expect(result.current.loading).toBe(false);
-    //         expect(result.current.data).toBeNull();
-    //         expect(result.current.error).toBe('Internal server error');
-    //     });
+      // Wait for the hook to finish loading
+      await waitFor(() => {
+          expect(result.current.loading).toBe(false);
+          expect(result.current.data).toBeNull();
+          expect(result.current.error).toBe('Internal server error');
+      });
 
-    //     // Check if fetch was called
-    //     expect(fetch).toHaveBeenCalledWith('http://localhost:8000/my-endpoint');
-    // });
+      // Check if fetch was called
+      expect(fetch).toHaveBeenCalledWith('http://localhost:8000/my-endpoint', {});
+  });
 });

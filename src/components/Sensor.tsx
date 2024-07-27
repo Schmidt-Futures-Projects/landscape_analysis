@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHttp } from '../hooks/useHttp';
 
 interface Sensor {
@@ -8,25 +8,49 @@ interface Sensor {
 }
 
 const Sensor: React.FC = () => {
-  const { data, loading, error, callRequest } = useHttp<Sensor[]>('/');
+    const [newSensor, setNewSensor] = useState<Sensor>({ id: 1, name: "Liam", value: Math.floor(Math.random() * 101) });
+    const { data, loading, error, callRequest } = useHttp<Sensor[]>('/', {i: 1});
+    const { loading: createSensorLoading, data: createSensorData, error: createSensorError, callRequest: createSensor } = useHttp('/sensor', {
+        method: 'POST',
+        body: JSON.stringify(newSensor),
+        headers: { 'Content-Type': 'application/json' },
+    });
 
-  useEffect(() => {
-    callRequest();
-  }, []);
+    useEffect(() => {
+        console.log('callRequest:', createSensor);
+        createSensor();
+    }, [createSensor]);
 
-  return (
-    <div>
-      <button onClick={callRequest}>Fetch Data</button>
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error.message}</p>}
-      {data && (
+    useEffect(() => {
+        callRequest()
+    }, [callRequest])
+
+    return (
+        <>
         <div>
-          <h1>Data:</h1>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
+            <button onClick={callRequest}>Fetch Data</button>
+            {loading && <p>Loading...</p>}
+            {error && <p>Error: {error.message}</p>}
+            {data && (
+            <div>
+                <h1>Data:</h1>
+                <pre>{JSON.stringify(data, null, 2)}</pre>
+            </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+        <div>
+            <button onClick={createSensor}>Create Sensor</button>
+            {createSensorError && <p>Error: {createSensorError.message}</p>}
+            {createSensorLoading && <p>Creating New Sensor</p>}
+            { createSensorData && (
+            <div>
+                <h1>New Sensor:</h1>
+                <pre>{JSON.stringify(createSensorData)}</pre>
+            </div>
+            )}
+        </div>
+    </>
+    );
 };
 
 export default Sensor;
