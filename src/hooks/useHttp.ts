@@ -14,6 +14,7 @@ async function parseResponse(resp: Response): Promise<any> {
     return JSON.parse(text);
 }
 
+
 export async function handleRestResponse(resp: Response): Promise<any> {
     if (resp.status >= 200 && resp.status < 300) {
         return parseResponse(resp);
@@ -40,7 +41,6 @@ export async function request<TResponse>(
         const data = await handleRestResponse(resp);
         return data as TResponse;
     } catch (error) {
-        debugger
         throw new Error(error as string);
     }
 }

@@ -7,10 +7,14 @@ interface Sensor {
   value: number;
 }
 
-const Sensor: React.FC = () => {
+interface SensorProps {
+    count: number;
+  }
+
+const Sensor: React.FC<SensorProps> = ({ count }) => {
     const [newSensor, setNewSensor] = useState<Sensor>({ id: 1, name: "Liam", value: Math.floor(Math.random() * 101) });
-    const { data, loading, error, callRequest } = useHttp<Sensor[]>('/');
-    const { loading: getSensorLoading, data: getSensorData, error: getSensorError, callRequest: getSensor } = useHttp('/sensor/1', {});
+    const { data, loading, error, callRequest } = useHttp<string>('/');
+    const { loading: getSensorLoading, data: getSensorData, error: getSensorError, callRequest: getSensor } = useHttp(`/sensor/${count}`, {});
     const { loading: createSensorLoading, data: createSensorData, error: createSensorError, callRequest: createSensor } = useHttp<Sensor>('/sensor', {
         method: 'POST',
         body: JSON.stringify(newSensor),
@@ -26,10 +30,6 @@ const Sensor: React.FC = () => {
         callRequest()
     }, [callRequest])
 
-
-    useEffect(() => {
-        getSensor()
-    }, [getSensor])
 
     return (
         <>

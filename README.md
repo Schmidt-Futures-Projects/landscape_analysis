@@ -2,6 +2,8 @@
 `npm run dev`
 `npm run lint`
 `npm test`
+`npx tsc -b --watch`
+`npm run build`
 
 # React + TypeScript + Vite
 
