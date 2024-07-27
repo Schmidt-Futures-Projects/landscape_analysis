@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_BASE_URL: string = 'localhost:8000';
+const API_BASE_URL: string = 'http://localhost:8000';
 
 export type HttpResult<T, E = any> = {
     loading: boolean;
     data: T | null;
     error: E | null;
+    callRequest: () => void;
 };
 
 function parseResponse(resp: Response): Promise<any> {
@@ -14,16 +15,20 @@ function parseResponse(resp: Response): Promise<any> {
 
 export function handleRestResponse(resp: Response): Promise<any> {
     if (resp.status >= 200 && resp.status < 300) {
-        // OK Response
         return parseResponse(resp);
     } else if (resp.status === 422) {
-        // Validation failed
-        return parseResponse(resp).then((data: any) => Promise.reject(data));
+        return parseResponse(resp).then((data: any) => Promise.reject({ 
+            status: resp.status,
+            statusText: resp.statusText,
+            ...data 
+        }));
+    } else {
+        return parseResponse(resp)
+            .then((data: any) => {
+                const errorMessage = resp.statusText || 'An unexpected error occurred';
+                return Promise.reject(`${errorMessage}: ${data.message || data.detail || 'Unknown error'}`);
+            });
     }
-    // Other error
-    const error: any = new Error(resp.statusText);
-    error.response = resp;
-    throw error;
 }
 
 export function request<TResponse>(
@@ -32,7 +37,10 @@ export function request<TResponse>(
 ): Promise<TResponse> {
     return fetch(url, config)
         .then(handleRestResponse)
-        .then((data) => data as TResponse);
+        .then((data) => data as TResponse)
+        .catch((error: string) => {
+            throw new Error(error);
+        });
 }
 
 export const useHttp = <T, E = any>(
@@ -43,7 +51,7 @@ export const useHttp = <T, E = any>(
     const [error, setError] = useState<E | null>(null);
     const [data, setData] = useState<T | null>(null);
 
-    const fetchData = useCallback(async () => {
+    const callRequest = useCallback(async () => {
         setLoading(true);
         setError(null);
 
@@ -57,9 +65,6 @@ export const useHttp = <T, E = any>(
         }
     }, [url, config]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
 
-    return { loading, data, error };
+    return { loading, data, error, callRequest };
 };

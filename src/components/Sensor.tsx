@@ -8,17 +8,17 @@ interface Sensor {
 }
 
 const Sensor: React.FC = () => {
-  const { data, loading, error, fetchData } = useHttp<Sensor[]>('http://localhost:8000/');
+  const { data, loading, error, callRequest } = useHttp<Sensor[]>('/');
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    callRequest();
+  }, []);
 
   return (
     <div>
-      <button onClick={fetchData}>Fetch Data</button>
+      <button onClick={callRequest}>Fetch Data</button>
       {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
+      {error && <p>Error: {error.message}</p>}
       {data && (
         <div>
           <h1>Data:</h1>
