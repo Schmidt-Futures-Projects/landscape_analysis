@@ -8,12 +8,16 @@ export type HttpResult<T> = {
     loading: boolean;
 };
 
+export type UseHttpResult<T> = HttpResult<T> & {
+    callRequest: () => Promise<void>;
+};
+
 async function parseResponse(resp: Response): Promise<any> {
     const text = await resp.text();
     return JSON.parse(text);
 }
 
-export function useHttp<T>(url: string, options: RequestInit = {}) {
+export function useHttp<T>(url: string, options: RequestInit = {}): UseHttpResult<T> {
     const [result, setResult] = useState<HttpResult<T>>({
         data: null,
         error: null,
