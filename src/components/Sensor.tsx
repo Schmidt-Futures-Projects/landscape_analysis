@@ -10,7 +10,7 @@ interface Sensor {
 
 const Sensor: React.FC = () => {
     const [sensorIdCount, setSensorIdCount] = useState(0)
-    const [newSensor, setNewSensor] = useState<Sensor>({ id: 1, name: "Liam", value: Math.floor(Math.random() * 101) });
+    const [newSensor, _setNewSensor] = useState<Sensor>({ id: 1, name: "Liam", value: Math.floor(Math.random() * 101) });
     const { data, loading, error, callRequest } = useHttp<string>('/');
     const { loading: getSensorLoading, data: getSensorData, error: getSensorError, callRequest: getSensor } = useHttp<Sensor>(`/sensor/${sensorIdCount}`, {});
     const { loading: createSensorLoading, data: createSensorData, error: createSensorError, callRequest: createSensor } = useHttp<Sensor>('/sensor', {

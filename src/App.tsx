@@ -5,7 +5,7 @@ function App() {
 
   return (
     <>
-      <h1>Flexible Frontend</h1>
+      <h1>TGT Flexible Frontend</h1>
       <Sensor/>
     </>
   )
