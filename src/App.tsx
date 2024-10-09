@@ -6,7 +6,7 @@ function App() {
   return (
     <>
       <h1>TGT Flexible Frontend</h1>
-      <Sensor/>
+      {/* <Sensor/> */}
     </>
   )
 }
